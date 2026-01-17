@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精美 Markdown 编辑器 | 一键部署</title>
+    <meta name="description" content="一个美观、功能丰富的实时 Markdown 编辑器，支持暗色模式、语法高亮和本地保存">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✏️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-markdown"></i>
+                <h1>Markdown Editor</h1>
+                <span class="version">v1.0</span>
+            </div>
+            <div class="controls">
+                <div class="theme-toggle">
+                    <button id="themeToggle" class="btn-icon" title="切换主题">
+                        <i class="fas fa-moon"></i>
+                        <span>暗色模式</span>
+                    </button>
+                </div>
+                <div class="word-count">
+                    <i class="fas fa-file-word"></i>
+                    <span id="wordCount">0</span> 字
+                </div>
+            </div>
+        </header>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="# " title="标题">
+                    <i class="fas fa-heading"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="**text**" title="粗体">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="*text*" title="斜体">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="~~text~~" title="删除线">
+                    <i class="fas fa-strikethrough"></i>
+                </button>
+            </div>
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="- [ ] " title="待办列表">
+                    <i class="fas fa-tasks"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="1. " title="有序列表">
+                    <i class="fas fa-list-ol"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="- " title="无序列表">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="> " title="引用">
+                    <i class="fas fa-quote-right"></i>
+                </button>
+            </div>
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="[链接文本](url)" title="链接">
+                    <i class="fas fa-link"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="![图片描述](url)" title="图片">
+                    <i class="fas fa-image"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="```\ncode\n```" title="代码块">
+                    <i class="fas fa-code"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="`code`" title="行内代码">
+                    <i class="fas fa-terminal"></i>
+                </button>
+            </div>
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" title="表格">
+                    <i class="fas fa-table"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="---" title="分割线">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button id="saveBtn" class="toolbar-btn success" title="保存到本地">
+                    <i class="fas fa-save"></i>
+                </button>
+                <button id="clearBtn" class="toolbar-btn danger" title="清空内容">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 编辑区域 -->
+        <div class="editor-container">
+            <div class="editor-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-edit"></i> 编辑区</h2>
+                    <button id="copyBtn" class="btn-sm">
+                        <i class="fas fa-copy"></i> 复制 Markdown
+                    </button>
+                </div>
+                <textarea id="editor" class="editor" placeholder="# 开始编写 Markdown...&#10;&#10;- 支持 **粗体**、*斜体*、`代码`&#10;- 支持 [链接](https://example.com) 和 ![图片](https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=300)&#10;- 支持表格、列表、引用块&#10;- 内容自动保存到浏览器本地存储">
+                
