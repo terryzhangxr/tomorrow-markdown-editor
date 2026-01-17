@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>精美 Markdown 编辑器 | 一键部署</title>
-    <meta name="description" content="一个美观、功能丰富的实时 Markdown 编辑器，支持暗色模式、语法高亮和本地保存">
+    <title>Markdown 编辑器</title>
+    <meta name="description" content="实时 Markdown 编辑器，支持暗色模式、语法高亮和本地保存">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="style.css">
@@ -12,7 +12,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- 头部 -->
         <header class="header">
             <div class="logo">
                 <i class="fas fa-markdown"></i>
@@ -21,7 +20,7 @@
             </div>
             <div class="controls">
                 <div class="theme-toggle">
-                    <button id="themeToggle" class="btn-icon" title="切换主题">
+                    <button id="themeToggle" class="btn-icon" type="button">
                         <i class="fas fa-moon"></i>
                         <span>暗色模式</span>
                     </button>
@@ -33,74 +32,145 @@
             </div>
         </header>
 
-        <!-- 工具栏 -->
         <div class="toolbar">
             <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="# " title="标题">
+                <button class="toolbar-btn" data-insert="# " type="button">
                     <i class="fas fa-heading"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="**text**" title="粗体">
+                <button class="toolbar-btn" data-insert="**text**" type="button">
                     <i class="fas fa-bold"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="*text*" title="斜体">
+                <button class="toolbar-btn" data-insert="*text*" type="button">
                     <i class="fas fa-italic"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="~~text~~" title="删除线">
+                <button class="toolbar-btn" data-insert="~~text~~" type="button">
                     <i class="fas fa-strikethrough"></i>
                 </button>
             </div>
             <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="- [ ] " title="待办列表">
+                <button class="toolbar-btn" data-insert="- [ ] " type="button">
                     <i class="fas fa-tasks"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="1. " title="有序列表">
+                <button class="toolbar-btn" data-insert="1. " type="button">
                     <i class="fas fa-list-ol"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="- " title="无序列表">
+                <button class="toolbar-btn" data-insert="- " type="button">
                     <i class="fas fa-list-ul"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="> " title="引用">
+                <button class="toolbar-btn" data-insert="> " type="button">
                     <i class="fas fa-quote-right"></i>
                 </button>
             </div>
             <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="[链接文本](url)" title="链接">
+                <button class="toolbar-btn" data-insert="[链接文本](url)" type="button">
                     <i class="fas fa-link"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="![图片描述](url)" title="图片">
+                <button class="toolbar-btn" data-insert="![图片描述](url)" type="button">
                     <i class="fas fa-image"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="```\ncode\n```" title="代码块">
+                <button class="toolbar-btn" data-insert="```\ncode\n```" type="button">
                     <i class="fas fa-code"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="`code`" title="行内代码">
+                <button class="toolbar-btn" data-insert="`code`" type="button">
                     <i class="fas fa-terminal"></i>
                 </button>
             </div>
             <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" title="表格">
+                <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" type="button">
                     <i class="fas fa-table"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="---" title="分割线">
+                <button class="toolbar-btn" data-insert="---" type="button">
                     <i class="fas fa-minus"></i>
                 </button>
-                <button id="saveBtn" class="toolbar-btn success" title="保存到本地">
+                <button id="saveBtn" class="toolbar-btn success" type="button">
                     <i class="fas fa-save"></i>
                 </button>
-                <button id="clearBtn" class="toolbar-btn danger" title="清空内容">
+                <button id="clearBtn" class="toolbar-btn danger" type="button">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </div>
 
-        <!-- 编辑区域 -->
         <div class="editor-container">
             <div class="editor-section">
                 <div class="section-header">
                     <h2><i class="fas fa-edit"></i> 编辑区</h2>
-                    <button id="copyBtn" class="btn-sm">
-                        <i class="fas fa-copy"></i> 复制 Markdown
+                    <button id="copyBtn" class="btn-sm" type="button">
+                        <i class="fas fa-copy"></i> 复制
                     </button>
                 </div>
-                <textarea id="editor" class="editor" placeholder="# 开始编写 Markdown...&#10;&#10;- 支持 **粗体**、*斜体*、`代码`&#10;- 支持 [链接](https://example.com) 和 ![图片](https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=300)&#10;- 支持表格、列表、引用块&#10;- 内容自动保存到浏览器本地存储">
-                
+                <textarea id="editor" class="editor" placeholder="# 开始编写 Markdown..."># Markdown 编辑器
+
+## 功能特性
+
+- **实时预览** - 左侧编辑，右侧即时渲染
+- **语法高亮** - 代码块自动着色
+- **本地存储** - 内容自动保存
+- **主题切换** - 支持亮色/暗色模式
+- **响应式设计** - 适配各种设备
+
+## 示例代码
+
+\`\`\`javascript
+// JavaScript 示例
+function hello() {
+    console.log("Hello, Markdown!");
+    return (
+        <div className="app">
+            <h1>React 组件</h1>
+        </div>
+    );
+}
+\`\`\`
+
+## 表格示例
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| 实时预览 | ✅ | 即时渲染 |
+| 暗色模式 | ✅ | 护眼模式 |
+| 本地保存 | ✅ | 自动保存 |
+| 导出功能 | ✅ | 下载文件 |
+
+> 💡 提示：使用工具栏快速插入格式
+
+**开始创作吧！**</textarea>
+            </div>
+            
+            <div class="preview-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-eye"></i> 预览区</h2>
+                    <button id="downloadBtn" class="btn-sm btn-primary" type="button">
+                        <i class="fas fa-download"></i> 下载
+                    </button>
+                </div>
+                <div id="preview" class="preview"></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>
+                        <i class="fas fa-code"></i> 基于 Marked.js |
+                        <i class="fas fa-cloud"></i> 支持 Vercel |
+                        <i class="fas fa-sync-alt"></i> 自动保存
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com" target="_blank" class="footer-link">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://vercel.com" target="_blank" class="footer-link">
+                        <i class="fas fa-rocket"></i> Vercel
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
