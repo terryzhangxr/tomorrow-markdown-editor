@@ -3,8 +3,9 @@
 一个由Terryzhang编写的美观、功能丰富的实时 Markdown 编辑器，支持一键部署到 Vercel。
 ![图片描述](https://ik.imagekit.io/terryzhang/IMG_7115.jpeg)
 ![图片描述](https://ik.imagekit.io/terryzhang/IMG_7116.jpeg)
-![图片描述](https://ik.imagekit.io/terryzhang/IMG_7114.jpeg)
 ![图片描述](https://ik.imagekit.io/terryzhang/IMG_7117.jpeg)
+![图片描述](https://ik.imagekit.io/terryzhang/IMG_7114.jpeg)
+
 ## 功能特点
 
 - ✨ **实时预览** - 左侧编辑，右侧即时渲染
