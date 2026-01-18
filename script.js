@@ -346,3 +346,197 @@ document.addEventListener('DOMContentLoaded', function() {
     
     showNotification('编辑器已加载', 'info');
 });
+// ==================== 数学公式支持 ====================
+
+// 配置 KaTeX
+function setupKaTeX() {
+    if (typeof renderMathInElement !== 'function') {
+        console.warn('KaTeX 自动渲染功能未加载');
+        return;
+    }
+    
+    const options = {
+        delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+        ],
+        throwOnError: false,
+        strict: false,
+        trust: false
+    };
+    
+    return options;
+}
+
+// 渲染数学公式
+function renderMath() {
+    if (typeof renderMathInElement === 'function') {
+        const options = setupKaTeX();
+        const preview = document.getElementById('preview');
+        if (preview) {
+            renderMathInElement(preview, options);
+        }
+    }
+}
+
+// ==================== 提示框功能 ====================
+
+// 初始化 Tippy.js 提示框
+function initTooltips() {
+    if (typeof tippy !== 'function') {
+        console.warn('Tippy.js 未加载，提示框不可用');
+        return;
+    }
+    
+    tippy('[data-tippy-content]', {
+        theme: 'light-border',
+        placement: 'top',
+        animation: 'fade',
+        duration: 200,
+        arrow: true,
+        delay: [100, 0],
+        onShow(instance) {
+            const theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                instance.setProps({ theme: 'dark' });
+            } else {
+                instance.setProps({ theme: 'light-border' });
+            }
+        }
+    });
+    
+    console.log('✅ 提示框初始化完成');
+}
+
+// ==================== 公式面板功能 ====================
+
+function initFormulaPanel() {
+    const formulaPanel = document.querySelector('.formula-panel');
+    const toggleBtn = document.getElementById('toggleFormulaPanel');
+    const formulaBtns = document.querySelectorAll('.formula-btn');
+    
+    if (!formulaPanel || !toggleBtn) return;
+    
+    // 切换面板展开/折叠
+    toggleBtn.addEventListener('click', function() {
+        formulaPanel.classList.toggle('collapsed');
+        const icon = this.querySelector('i');
+        if (formulaPanel.classList.contains('collapsed')) {
+            icon.className = 'fas fa-chevron-right';
+            this.title = '展开公式面板';
+        } else {
+            icon.className = 'fas fa-chevron-down';
+            this.title = '折叠公式面板';
+        }
+    });
+    
+    // 公式按钮点击事件
+    formulaBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const formula = this.dataset.formula;
+            if (formula) {
+                insertFormula(formula);
+            }
+        });
+    });
+    
+    // 默认展开
+    formulaPanel.classList.remove('collapsed');
+}
+
+// 插入公式到编辑器
+function insertFormula(formula) {
+    const editor = document.getElementById('editor');
+    if (!editor) return;
+    
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end);
+    
+    let insertText = formula;
+    
+    // 如果有选中的文本，替换公式中的占位符
+    if (selectedText && formula.includes('text')) {
+        insertText = formula.replace('text', selectedText);
+    }
+    
+    // 插入文本
+    editor.value = editor.value.substring(0, start) + 
+                   insertText + 
+                   editor.value.substring(end);
+    
+    // 设置光标位置
+    const newCursorPos = start + insertText.length;
+    editor.setSelectionRange(newCursorPos, newCursorPos);
+    editor.focus();
+    
+    // 重新渲染
+    renderMarkdown();
+    updateWordCount();
+    saveToLocalStorage();
+    
+    // 显示通知
+    showNotification('公式已插入到编辑器中', 'success');
+}
+
+// ==================== 修改现有的 renderMarkdown 函数 ====================
+
+// 在现有的 renderMarkdown 函数中调用 renderMath
+// 修改 renderMarkdown 函数，在最后添加：
+function renderMarkdown() {
+    try {
+        const content = editor.value;
+        preview.innerHTML = marked.parse(content);
+        
+        // 添加代码块复制按钮
+        addCopyButtonsToCodeBlocks();
+        
+        // 渲染数学公式
+        renderMath();
+        
+    } catch (error) {
+        console.error('Markdown 渲染错误:', error);
+        preview.innerHTML = '<div style="padding: 20px; color: red; border: 2px solid red;">渲染错误: ' + error.message + '</div>';
+    }
+}
+
+// ==================== 修改初始化函数 ====================
+
+// 在 DOMContentLoaded 事件监听器中添加：
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ 编辑器初始化开始...');
+    
+    // ... 现有的初始化代码 ...
+    
+    // 在现有的事件监听器设置之后添加：
+    
+    // 初始化提示框
+    initTooltips();
+    
+    // 初始化公式面板
+    initFormulaPanel();
+    
+    // 监听主题切换，更新提示框主题
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            // 重新初始化提示框以应用新主题
+            setTimeout(initTooltips, 100);
+        });
+    }
+    
+    // 添加数学公式相关的工具栏按钮事件
+    const mathButtons = document.querySelectorAll('[data-insert*="$"]');
+    mathButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            insertText(this.dataset.insert);
+        });
+    });
+    
+    console.log('✅ 编辑器初始化完成（包含数学公式和提示框）');
+    
+    // 初始渲染数学公式
+    setTimeout(renderMath, 100);
+});
