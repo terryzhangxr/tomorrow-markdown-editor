@@ -346,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     showNotification('编辑器已加载', 'info');
 });
+
 // ==================== 数学公式支持 ====================
 
 // 配置 KaTeX
@@ -410,47 +411,6 @@ function initTooltips() {
     console.log('✅ 提示框初始化完成');
 }
 
-// ==================== 数学公式工具栏按钮功能 ====================
-
-// 为数学公式按钮添加事件监听
-function initMathButtons() {
-    const mathButtons = document.querySelectorAll('[data-insert*="$"]');
-    mathButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const start = editor.selectionStart;
-            const end = editor.selectionEnd;
-            const selectedText = editor.value.substring(start, end);
-            const syntax = this.dataset.insert;
-            
-            let insertText = syntax;
-            if (selectedText && syntax.includes('公式')) {
-                insertText = syntax.replace('公式', selectedText);
-            }
-            
-            const newValue = editor.value.substring(0, start) + 
-                            insertText + 
-                            editor.value.substring(end);
-            
-            editor.value = newValue;
-            
-            let newCursorPos = start + insertText.length;
-            
-            if (syntax.includes('公式') && !selectedText) {
-                const placeholderStart = syntax.indexOf('公式');
-                newCursorPos = start + placeholderStart;
-                editor.setSelectionRange(newCursorPos, newCursorPos + 2);
-            } else {
-                editor.setSelectionRange(newCursorPos, newCursorPos);
-            }
-            
-            editor.focus();
-            renderMarkdown();
-            updateWordCount();
-            saveToLocalStorage();
-        });
-    });
-}
-
 // ==================== 添加代码块复制按钮 ====================
 
 function addCopyButtonsToCodeBlocks() {
@@ -485,6 +445,59 @@ function addCopyButtonsToCodeBlocks() {
         
         block.appendChild(copyButton);
     });
+}
+
+// ==================== 统一的插入文本函数 ====================
+
+function insertText(syntax) {
+    try {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selectedText = editor.value.substring(start, end);
+        
+        let insertText = syntax;
+        
+        // 处理数学公式的"公式"占位符
+        if (selectedText && syntax.includes('公式')) {
+            insertText = syntax.replace(/公式/g, selectedText);
+        } else if (syntax.includes('公式')) {
+            insertText = syntax.replace(/公式/g, '');
+        }
+        // 处理其他格式的"text"占位符
+        else if (selectedText && syntax.includes('text')) {
+            insertText = syntax.replace(/text/g, selectedText);
+        } else if (syntax.includes('text')) {
+            insertText = syntax.replace(/text/g, '');
+        }
+        
+        const newValue = editor.value.substring(0, start) + 
+                        insertText + 
+                        editor.value.substring(end);
+        
+        editor.value = newValue;
+        
+        let newCursorPos = start + insertText.length;
+        
+        // 设置光标位置
+        if (syntax.includes('公式') && !selectedText) {
+            const placeholderStart = syntax.indexOf('公式');
+            newCursorPos = start + placeholderStart;
+            editor.setSelectionRange(newCursorPos, newCursorPos + 2);
+        } else if (syntax.includes('text') && !selectedText) {
+            const placeholderStart = syntax.indexOf('text');
+            newCursorPos = start + placeholderStart;
+            editor.setSelectionRange(newCursorPos, newCursorPos + 4);
+        } else {
+            editor.setSelectionRange(newCursorPos, newCursorPos);
+        }
+        
+        editor.focus();
+        renderMarkdown();
+        updateWordCount();
+        saveToLocalStorage();
+    } catch (error) {
+        console.error('插入文本错误:', error);
+    }
 }
 
 // ==================== 核心编辑器函数 ====================
@@ -554,45 +567,6 @@ function updateThemeButton(theme) {
     } else {
         icon.className = 'fas fa-moon';
         text.textContent = '暗色模式';
-    }
-}
-
-// 插入文本
-function insertText(syntax) {
-    try {
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
-        const selectedText = editor.value.substring(start, end);
-        
-        let insertText = syntax;
-        if (selectedText) {
-            insertText = syntax.replace(/text/g, selectedText);
-        } else if (syntax.includes('text')) {
-            insertText = syntax.replace(/text/g, '');
-        }
-        
-        const newValue = editor.value.substring(0, start) + 
-                        insertText + 
-                        editor.value.substring(end);
-        
-        editor.value = newValue;
-        
-        let newCursorPos = start + insertText.length;
-        
-        if (syntax.includes('text') && !selectedText) {
-            const placeholderStart = syntax.indexOf('text');
-            newCursorPos = start + placeholderStart;
-            editor.setSelectionRange(newCursorPos, newCursorPos + 4);
-        } else {
-            editor.setSelectionRange(newCursorPos, newCursorPos);
-        }
-        
-        editor.focus();
-        renderMarkdown();
-        updateWordCount();
-        saveToLocalStorage();
-    } catch (error) {
-        console.error('插入文本错误:', error);
     }
 }
 
@@ -807,7 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadBtn.addEventListener('click', downloadMarkdown);
     }
     
-    // 工具栏按钮（包括数学公式按钮）
+    // 工具栏按钮 - 只绑定一次事件
     toolbarButtons.forEach(button => {
         button.addEventListener('click', function() {
             console.log('点击工具栏按钮:', this.dataset.insert);
@@ -845,14 +819,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化提示框
     initTooltips();
     
-    // 初始化数学公式按钮
-    initMathButtons();
-    
     console.log('✅ 编辑器初始化完成');
     
     // 初始通知
     setTimeout(() => {
-        showNotification('编辑器已加载完成，支持数学公式和提示框功能', 'info');
+        showNotification('编辑器已加载完成', 'info');
     }, 500);
     
     // 初始渲染数学公式
