@@ -490,88 +490,6 @@ body {
     padding: 1em 0;
 }
 
-/* 公式面板样式 */
-.formula-panel {
-    background: var(--bg-primary);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-    margin-bottom: 25px;
-    overflow: hidden;
-}
-
-.formula-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 25px;
-    background: var(--bg-tertiary);
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-}
-
-.formula-panel-header h3 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.2rem;
-    margin: 0;
-}
-
-.formula-panel-content {
-    padding: 20px;
-    max-height: 300px;
-    overflow-y: auto;
-    transition: max-height 0.3s ease;
-}
-
-.formula-panel.collapsed .formula-panel-content {
-    max-height: 0;
-    padding: 0 20px;
-    overflow: hidden;
-}
-
-.formula-panel.collapsed .fa-chevron-down {
-    transform: rotate(-90deg);
-}
-
-.formula-examples {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.formula-group h4 {
-    margin: 0 0 10px 0;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-
-.formula-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.formula-btn {
-    padding: 8px 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-primary);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: var(--transition);
-    font-family: 'Consolas', monospace;
-}
-
-.formula-btn:hover {
-    background: var(--accent-color);
-    color: white;
-    transform: translateY(-2px);
-}
-
 /* 工具提示样式 */
 .tippy-box {
     font-size: 0.85rem;
@@ -600,22 +518,6 @@ body {
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'KaTeX_Math', 'Times New Roman', serif;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-    .formula-group {
-        flex-direction: column;
-    }
-    
-    .formula-btn {
-        width: 100%;
-        text-align: center;
-    }
-    
-    .formula-panel-content {
-        max-height: 400px;
-    }
 }
 
 /* 数学公式示例在暗色模式的特殊处理 */
