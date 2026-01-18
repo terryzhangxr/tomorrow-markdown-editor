@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomorrow Markdown 编辑器 | new defination of markdown</title>
-    <meta name="description" content="实时 Markdown 编辑器，支持暗色模式、语法高亮和本地保存">
+    <title>Tomorrow Markdown 编辑器 | new definition of markdown</title>
+    <meta name="description" content="实时 Markdown 编辑器，支持暗色模式、语法高亮、数学公式和本地保存">
     
-   
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX 数学公式支持 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdn.staticfile.org/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdn.staticfile.org/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
     
-    <!-- highlight.js 样式 - 使用 staticfile 镜像 -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- highlight.js 样式 -->
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
     
     <!-- 本地样式 -->
@@ -18,81 +23,10 @@
     <!-- Favicon -->
     <link rel="icon" href="https://ik.imagekit.io/terryzhang/IMG_7113.jpeg" type="image/x-icon">
     
-    <!-- 备用加载方案 -->
-    <script>
-    (function() {
-        // 资源加载监控
-        window.resourceStatus = {
-            loaded: false,
-            retryCount: 0
-        };
-        
-        // 备用资源列表
-        const fallbackResources = {
-            'font-awesome': [
-                'https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css',
-                'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-                'https://lib.baomitu.com/font-awesome/6.4.0/css/all.min.css'
-            ],
-            'highlight-style': [
-                'https://cdn.staticfile.org/highlight.js/11.8.0/styles/github-dark.min.css',
-                'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css'
-            ],
-            'marked': [
-                'https://cdn.staticfile.org/marked/12.0.0/marked.min.js',
-                'https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js',
-                'https://lib.baomitu.com/marked/12.0.0/marked.min.js'
-            ],
-            'highlight': [
-                'https://cdn.staticfile.org/highlight.js/11.8.0/highlight.min.js',
-                'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js',
-                'https://lib.baomitu.com/highlight.js/11.8.0/highlight.min.js'
-            ]
-        };
-        
-        // 动态加载备用资源
-        function loadResource(type, index = 0) {
-            const sources = fallbackResources[type];
-            if (!sources || index >= sources.length) return false;
-            
-            if (type.includes('css')) {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = sources[index];
-                link.onerror = () => loadResource(type, index + 1);
-                document.head.appendChild(link);
-            } else {
-                const script = document.createElement('script');
-                script.src = sources[index];
-                script.onerror = () => loadResource(type, index + 1);
-                document.head.appendChild(script);
-            }
-            return true;
-        }
-        
-        // 如果主资源加载失败，使用备用方案
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                // 检查 Font Awesome 是否加载
-                const testIcon = document.createElement('i');
-                testIcon.className = 'fas fa-check';
-                document.body.appendChild(testIcon);
-                
-                setTimeout(function() {
-                    const computed = window.getComputedStyle(testIcon);
-                    const fontFamily = computed.fontFamily || '';
-                    
-                    if (!fontFamily.includes('Font Awesome')) {
-                        console.warn('Font Awesome 加载失败，使用备用资源');
-                        loadResource('font-awesome');
-                    }
-                    
-                    document.body.removeChild(testIcon);
-                }, 100);
-            }, 1000);
-        });
-    })();
-    </script>
+    <!-- Tippy.js 提示框库 -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css">
 </head>
 <body>
     <div class="container">
@@ -100,7 +34,7 @@
             <div class="logo">
                 <i class="fa-brands fa-markdown"></i>
                 <h1>Tomorrow Markdown 编辑器</h1>
-                <span class="version">v1.0</span>
+                <span class="version">v1.2</span>
             </div>
             <div class="controls">
                 <div class="theme-toggle">
@@ -118,58 +52,72 @@
 
         <div class="toolbar">
             <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="# " type="button">
+                <button class="toolbar-btn" data-insert="# " type="button" data-tippy-content="标题 (H1)">
                     <i class="fas fa-heading"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="**text**" type="button">
+                <button class="toolbar-btn" data-insert="## " type="button" data-tippy-content="二级标题 (H2)">
+                    <i class="fas fa-heading" style="font-size: 0.9em;"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="### " type="button" data-tippy-content="三级标题 (H3)">
+                    <i class="fas fa-heading" style="font-size: 0.8em;"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="**text**" type="button" data-tippy-content="粗体">
                     <i class="fas fa-bold"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="*text*" type="button">
+            </div>
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="*text*" type="button" data-tippy-content="斜体">
                     <i class="fas fa-italic"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="~~text~~" type="button">
+                <button class="toolbar-btn" data-insert="~~text~~" type="button" data-tippy-content="删除线">
                     <i class="fas fa-strikethrough"></i>
                 </button>
-            </div>
-            <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="- [ ] " type="button">
-                    <i class="fas fa-tasks"></i>
-                </button>
-                <button class="toolbar-btn" data-insert="1. " type="button">
-                    <i class="fas fa-list-ol"></i>
-                </button>
-                <button class="toolbar-btn" data-insert="- " type="button">
-                    <i class="fas fa-list-ul"></i>
-                </button>
-                <button class="toolbar-btn" data-insert="> " type="button">
-                    <i class="fas fa-quote-right"></i>
-                </button>
-            </div>
-            <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="[链接文本](url)" type="button">
-                    <i class="fas fa-link"></i>
-                </button>
-                <button class="toolbar-btn" data-insert="![图片描述](url)" type="button">
-                    <i class="fas fa-image"></i>
-                </button>
-                <button class="toolbar-btn" data-insert="```\ncode\n```" type="button">
+                <button class="toolbar-btn" data-insert="`code`" type="button" data-tippy-content="行内代码">
                     <i class="fas fa-code"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="`code`" type="button">
+                <button class="toolbar-btn" data-insert="```\ncode\n```" type="button" data-tippy-content="代码块">
                     <i class="fas fa-terminal"></i>
                 </button>
             </div>
             <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" type="button">
+                <button class="toolbar-btn" data-insert="$\text{公式}$" type="button" data-tippy-content="行内数学公式">
+                    <i class="fas fa-sigma"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="$$\n公式\n$$" type="button" data-tippy-content="块级数学公式">
+                    <i class="fas fa-square-root-alt"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="[链接文本](url)" type="button" data-tippy-content="链接">
+                    <i class="fas fa-link"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="![图片描述](url)" type="button" data-tippy-content="图片">
+                    <i class="fas fa-image"></i>
+                </button>
+            </div>
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="- [ ] " type="button" data-tippy-content="待办列表">
+                    <i class="fas fa-tasks"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="1. " type="button" data-tippy-content="有序列表">
+                    <i class="fas fa-list-ol"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="- " type="button" data-tippy-content="无序列表">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button class="toolbar-btn" data-insert="> " type="button" data-tippy-content="引用">
+                    <i class="fas fa-quote-right"></i>
+                </button>
+            </div>
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" type="button" data-tippy-content="表格">
                     <i class="fas fa-table"></i>
                 </button>
-                <button class="toolbar-btn" data-insert="---" type="button">
+                <button class="toolbar-btn" data-insert="---" type="button" data-tippy-content="分割线">
                     <i class="fas fa-minus"></i>
                 </button>
-                <button id="saveBtn" class="toolbar-btn success" type="button">
+                <button id="saveBtn" class="toolbar-btn success" type="button" data-tippy-content="保存到本地">
                     <i class="fas fa-save"></i>
                 </button>
-                <button id="clearBtn" class="toolbar-btn danger" type="button">
+                <button id="clearBtn" class="toolbar-btn danger" type="button" data-tippy-content="清空内容">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -183,42 +131,63 @@
                         <i class="fas fa-copy"></i> 复制
                     </button>
                 </div>
-                <textarea id="editor" class="editor" placeholder="# 开始编写 Markdown..."># Markdown 编辑器
+                <textarea id="editor" class="editor" placeholder="# 开始编写 Markdown...
+"># Tomorrow Markdown 编辑器
 
-## 功能特性
+## ✨ 新特性
 
-- **实时预览** - 左侧编辑，右侧即时渲染
-- **语法高亮** - 代码块自动着色
-- **本地存储** - 内容自动保存
-- **主题切换** - 支持亮色/暗色模式
-- **响应式设计** - 适配各种设备
+### 1. 数学公式支持
 
-## 示例代码
+#### 行内公式
+质能方程：$E = mc^2$
 
-```javascript
-// JavaScript 示例
-function hello() {
-    console.log("Hello, Markdown!");
-    return (
-        <div className="app">
-            <h1>React 组件</h1>
-        </div>
-    );
-}
+勾股定理：$a^2 + b^2 = c^2$
+
+#### 块级公式
+$$
+f(x) = \int_{-\infty}^{\infty} \hat f(\xi) e^{2 \pi i \xi x} d\xi
+$$
+
+$$
+\begin{aligned}
+\nabla \cdot \mathbf{E} &= \frac{\rho}{\varepsilon_0} \\
+\nabla \cdot \mathbf{B} &= 0 \\
+\nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
+\nabla \times \mathbf{B} &= \mu_0 \mathbf{J} + \mu_0\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\end{aligned}
+$$
+
+### 2. 代码高亮示例
+
+```python
+import numpy as np
+
+def calculate_mean(numbers):
+    """计算平均值"""
+    return np.mean(numbers)
+
+# 使用示例
+data = [1, 2, 3, 4, 5]
+print(f"平均值: {calculate_mean(data)}")
 ```
 
-## 表格示例
+
+
+### 3. 其他功能
 
 | 功能 | 状态 | 说明 |
 |------|------|------|
-| 实时预览 | ✅ | 即时渲染 |
-| 暗色模式 | ✅ | 护眼模式 |
+| 数学公式 | ✅ | 支持 LaTeX 语法 |
+| 代码高亮 | ✅ | 多种语言支持 |
+| 暗色模式 | ✅ | 保护眼睛 |
 | 本地保存 | ✅ | 自动保存 |
-| 导出功能 | ✅ | 下载文件 |
+| 实时预览 | ✅ | 即时渲染 |
 
-> 💡 提示：使用工具栏快速插入格式
+> 💡 **提示**：将鼠标悬停在工具栏按钮上查看功能说明
+> 
+> 📝 **数学公式**：使用 `$公式$` 表示行内公式，`$$公式$$` 表示块级公式
 
-**开始创作吧！**</textarea>
+**开始你的创作吧！**</textarea>
             </div>
             
             <div class="preview-section">
@@ -232,12 +201,47 @@ function hello() {
             </div>
         </div>
 
+        <!-- 数学公式示例面板 -->
+        <div class="formula-panel">
+            <div class="formula-panel-header">
+                <h3><i class="fas fa-calculator"></i> 数学公式示例</h3>
+                <button id="toggleFormulaPanel" class="btn-sm">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="formula-panel-content">
+                <div class="formula-examples">
+                    <div class="formula-group">
+                        <h4>基础公式</h4>
+                        <button class="formula-btn" data-formula="$E = mc^2$">质能方程</button>
+                        <button class="formula-btn" data-formula="$a^2 + b^2 = c^2$">勾股定理</button>
+                        <button class="formula-btn" data-formula="$x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$">二次方程</button>
+                    </div>
+                    <div class="formula-group">
+                        <h4>积分与微分</h4>
+                        <button class="formula-btn" data-formula="$\\frac{d}{dx}f(x) = \\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}$">导数定义</button>
+                        <button class="formula-btn" data-formula="$$\\int_a^b f(x)dx = F(b) - F(a)$$">积分定理</button>
+                        <button class="formula-btn" data-formula="$\\oint_C \\mathbf{F} \\cdot d\\mathbf{r}$">曲线积分</button>
+                    </div>
+                    <div class="formula-group">
+                        <h4>希腊字母</h4>
+                        <button class="formula-btn" data-formula="$\\alpha$">Alpha</button>
+                        <button class="formula-btn" data-formula="$\\beta$">Beta</button>
+                        <button class="formula-btn" data-formula="$\\gamma$">Gamma</button>
+                        <button class="formula-btn" data-formula="$\\pi$">Pi</button>
+                        <button class="formula-btn" data-formula="$\\sigma$">Sigma</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-info">
                     <p>
-                        <i class="fas fa-code"></i> 基于 Marked.js |
-                        <i class="fas fa-cloud"></i> 支持 Vercel |
+                        <i class="fas fa-calculator"></i> 支持 LaTeX 数学公式 |
+                        <i class="fas fa-code"></i> 代码高亮 |
+                        <i class="fas fa-cloud"></i> 一键部署 |
                         <i class="fas fa-sync-alt"></i> 自动保存
                     </p>
                 </div>
@@ -248,47 +252,19 @@ function hello() {
                     <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fterryzhangxr%2Ftomorrow-markdown-editor" target="_blank" rel="noopener noreferrer" class="footer-link">
                         <i class="fas fa-rocket"></i> Vercel
                     </a>
+                    <a href="https://katex.org/docs/supported.html" target="_blank" rel="noopener noreferrer" class="footer-link">
+                        <i class="fas fa-infinity"></i> KaTeX 文档
+                    </a>
                 </div>
             </div>
         </footer>
     </div>
 
-    
+    <!-- JavaScript 库 -->
     <script src="https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js"></script>
-    
-    
     <script src="https://cdn.staticfile.org/highlight.js/11.8.0/highlight.min.js"></script>
     
     <!-- 本地脚本 -->
     <script src="script.js"></script>
-    
-    <!-- 备用加载 -->
-    <script>
-    // 检查资源加载状态
-    window.addEventListener('load', function() {
-        console.log('资源加载检查...');
-        
-        // 如果 marked 未加载，尝试备用源
-        if (typeof marked === 'undefined') {
-            console.warn('marked.js 加载失败，尝试备用源');
-            const script = document.createElement('script');
-            script.src = 'https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js';
-            document.body.appendChild(script);
-        }
-        
-        // 如果 highlight 未加载，尝试备用源
-        if (typeof hljs === 'undefined') {
-            console.warn('highlight.js 加载失败，尝试备用源');
-            const script = document.createElement('script');
-            script.src = 'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js';
-            document.body.appendChild(script);
-        }
-        
-        // 显示加载完成消息
-        setTimeout(function() {
-            console.log('✅ 编辑器资源加载完成');
-        }, 500);
-    });
-    </script>
 </body>
 </html>
