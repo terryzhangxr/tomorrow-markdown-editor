@@ -5,10 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tomorrow Markdown 编辑器 | new defination of markdown</title>
     <meta name="description" content="实时 Markdown 编辑器，支持暗色模式、语法高亮和本地保存">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    
+    <!-- 使用国内可访问的 CDN -->
+    <!-- Font Awesome - 使用 staticfile 镜像 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- highlight.js 样式 - 使用 staticfile 镜像 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/11.8.0/styles/github-dark.min.css">
+    
+    <!-- 本地样式 -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
     <link rel="icon" href="https://ik.imagekit.io/terryzhang/IMG_7113.jpeg" type="image/x-icon">
+    
+    <!-- 备用加载方案 -->
+    <script>
+    (function() {
+        // 资源加载监控
+        window.resourceStatus = {
+            loaded: false,
+            retryCount: 0
+        };
+        
+        // 备用资源列表
+        const fallbackResources = {
+            'font-awesome': [
+                'https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css',
+                'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                'https://lib.baomitu.com/font-awesome/6.4.0/css/all.min.css'
+            ],
+            'highlight-style': [
+                'https://cdn.staticfile.org/highlight.js/11.8.0/styles/github-dark.min.css',
+                'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css'
+            ],
+            'marked': [
+                'https://cdn.staticfile.org/marked/12.0.0/marked.min.js',
+                'https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js',
+                'https://lib.baomitu.com/marked/12.0.0/marked.min.js'
+            ],
+            'highlight': [
+                'https://cdn.staticfile.org/highlight.js/11.8.0/highlight.min.js',
+                'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js',
+                'https://lib.baomitu.com/highlight.js/11.8.0/highlight.min.js'
+            ]
+        };
+        
+        // 动态加载备用资源
+        function loadResource(type, index = 0) {
+            const sources = fallbackResources[type];
+            if (!sources || index >= sources.length) return false;
+            
+            if (type.includes('css')) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = sources[index];
+                link.onerror = () => loadResource(type, index + 1);
+                document.head.appendChild(link);
+            } else {
+                const script = document.createElement('script');
+                script.src = sources[index];
+                script.onerror = () => loadResource(type, index + 1);
+                document.head.appendChild(script);
+            }
+            return true;
+        }
+        
+        // 如果主资源加载失败，使用备用方案
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                // 检查 Font Awesome 是否加载
+                const testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-check';
+                document.body.appendChild(testIcon);
+                
+                setTimeout(function() {
+                    const computed = window.getComputedStyle(testIcon);
+                    const fontFamily = computed.fontFamily || '';
+                    
+                    if (!fontFamily.includes('Font Awesome')) {
+                        console.warn('Font Awesome 加载失败，使用备用资源');
+                        loadResource('font-awesome');
+                    }
+                    
+                    document.body.removeChild(testIcon);
+                }, 100);
+            }, 1000);
+        });
+    })();
+    </script>
 </head>
 <body>
     <div class="container">
@@ -111,7 +196,7 @@
 
 ## 示例代码
 
-```javascript
+\`\`\`javascript
 // JavaScript 示例
 function hello() {
     console.log("Hello, Markdown!");
@@ -121,7 +206,7 @@ function hello() {
         </div>
     );
 }
-```
+\`\`\`
 
 ## 表格示例
 
@@ -158,10 +243,10 @@ function hello() {
                     </p>
                 </div>
                 <div class="footer-links">
-                    <a href="https://github.com/terryzhangxr/tomorrow-markdown-editor" target="_blank" class="footer-link">
+                    <a href="https://github.com/terryzhangxr/tomorrow-markdown-editor" target="_blank" rel="noopener noreferrer" class="footer-link">
                         <i class="fab fa-github"></i> GitHub
                     </a>
-                    <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fterryzhangxr%2Ftomorrow-markdown-editor" target="_blank" class="footer-link">
+                    <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fterryzhangxr%2Ftomorrow-markdown-editor" target="_blank" rel="noopener noreferrer" class="footer-link">
                         <i class="fas fa-rocket"></i> Vercel
                     </a>
                 </div>
@@ -169,8 +254,43 @@ function hello() {
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <!-- 使用国内可靠的 CDN 资源 -->
+    <!-- marked.js - 七牛云 CDN -->
+    <script src="https://cdn.staticfile.org/marked/12.0.0/marked.min.js"></script>
+    
+    <!-- highlight.js - 七牛云 CDN -->
+    <script src="https://cdn.staticfile.org/highlight.js/11.8.0/highlight.min.js"></script>
+    
+    <!-- 本地脚本 -->
     <script src="script.js"></script>
+    
+    <!-- 备用加载 -->
+    <script>
+    // 检查资源加载状态
+    window.addEventListener('load', function() {
+        console.log('资源加载检查...');
+        
+        // 如果 marked 未加载，尝试备用源
+        if (typeof marked === 'undefined') {
+            console.warn('marked.js 加载失败，尝试备用源');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js';
+            document.body.appendChild(script);
+        }
+        
+        // 如果 highlight 未加载，尝试备用源
+        if (typeof hljs === 'undefined') {
+            console.warn('highlight.js 加载失败，尝试备用源');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js';
+            document.body.appendChild(script);
+        }
+        
+        // 显示加载完成消息
+        setTimeout(function() {
+            console.log('✅ 编辑器资源加载完成');
+        }, 500);
+    });
+    </script>
 </body>
 </html>
