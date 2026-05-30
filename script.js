@@ -9,121 +9,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('downloadBtn');
     const toolbarButtons = document.querySelectorAll('.toolbar-btn[data-insert]');
     
-    // 标记是否已初始化，防止重复绑定
+    // 移动端相关 DOM
+    const viewToggle = document.getElementById('viewToggle');
+    const editorPane = document.getElementById('editorPane');
+    const previewPane = document.getElementById('previewPane');
+    const toolbar = document.getElementById('toolbar');
+    const openToolbarBtn = document.getElementById('openToolbarBtn');
+    const closeToolbarBtn = document.getElementById('closeToolbarBtn');
+    
     let isInitialized = false;
+    let isPreviewMode = false;
     
     // ========== 数学公式支持 ==========
-    // 配置 KaTeX
     function setupKaTeX() {
-        if (typeof renderMathInElement !== 'function') {
-            console.warn('KaTeX 自动渲染功能未加载');
-            return;
-        }
-        
-        const options = {
+        if (typeof renderMathInElement !== 'function') return;
+        return {
             delimiters: [
                 { left: '$$', right: '$$', display: true },
                 { left: '$', right: '$', display: false },
                 { left: '\\(', right: '\\)', display: false },
                 { left: '\\[', right: '\\]', display: true }
             ],
-            throwOnError: false,
-            strict: false,
-            trust: false
+            throwOnError: false
         };
-        
-        return options;
     }
     
-    // 渲染数学公式
     function renderMath() {
         if (typeof renderMathInElement === 'function') {
-            const options = setupKaTeX();
-            renderMathInElement(preview, options);
+            renderMathInElement(preview, setupKaTeX());
         }
     }
     
     // ========== 提示框功能 ==========
-    // 初始化 Tippy.js 提示框
     function initTooltips() {
-        if (typeof tippy !== 'function') {
-            console.warn('Tippy.js 未加载，提示框不可用');
-            return;
-        }
+        if (typeof tippy !== 'function' || window.innerWidth <= 768) return; // 移动端禁用提示
         
         tippy('[data-tippy-content]', {
             theme: 'light-border',
             placement: 'top',
             animation: 'fade',
-            duration: 200,
-            arrow: true,
-            delay: [100, 0],
-            onShow(instance) {
-                const theme = document.documentElement.getAttribute('data-theme');
-                if (theme === 'dark') {
-                    instance.setProps({ theme: 'dark' });
-                } else {
-                    instance.setProps({ theme: 'light-border' });
-                }
-            }
+            duration: 150
         });
     }
     
-    // ========== 核心函数 ==========
+    // ========== 核心渲染与状态 ==========
     function renderMarkdown() {
         try {
-            const content = editor.value;
-            preview.innerHTML = marked.parse(content);
+            preview.innerHTML = marked.parse(editor.value);
             addCopyButtonsToCodeBlocks();
-            // 渲染数学公式
             renderMath();
         } catch (error) {
-            console.error('Markdown 渲染错误:', error);
-            preview.innerHTML = '<div style="padding: 20px; color: red;">渲染错误: ' + error.message + '</div>';
+            console.error('Markdown error:', error);
         }
     }
     
     function updateWordCount() {
         const text = editor.value;
-        const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || [];
-        const englishWords = text.match(/\b[a-z]+\b/gi) || [];
-        const count = chineseChars.length + englishWords.length;
-        wordCount.textContent = count.toLocaleString();
+        const count = (text.match(/[\u4e00-\u9fa5]/g) || []).length + (text.match(/\b[a-z]+\b/gi) || []).length;
+        if(wordCount) wordCount.textContent = count;
     }
     
     function toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const newTheme = isDark ? 'light' : 'dark';
         
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('markdown-editor-theme', newTheme);
-        updateThemeButton(newTheme);
-        showNotification(`已切换到${newTheme === 'light' ? '亮色' : '暗色'}模式`, 'info');
         
-        // 重新初始化提示框以应用新主题
-        setTimeout(initTooltips, 100);
-    }
-    
-    function updateThemeButton(theme) {
         const icon = themeToggle.querySelector('i');
-        const text = themeToggle.querySelector('span');
-        
-        if (theme === 'dark') {
-            icon.className = 'fas fa-sun';
-            text.textContent = '亮色模式';
-        } else {
-            icon.className = 'fas fa-moon';
-            text.textContent = '暗色模式';
-        }
+        icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        showNotification(`Switched to ${newTheme} mode`, 'info');
     }
     
-    // ========== 修复的插入文本函数 ==========
+    // ========== 插入文本逻辑 ==========
     function insertText(syntax) {
-        // 防止重复执行
-        if (window.insertTextExecuting) {
-            return;
-        }
-        
+        if (window.insertTextExecuting) return;
         window.insertTextExecuting = true;
         
         try {
@@ -132,305 +92,163 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedText = editor.value.substring(start, end);
             
             let insertText = syntax;
-            
-            // 处理数学公式的"公式"占位符
-            if (selectedText && syntax.includes('公式')) {
-                insertText = syntax.replace(/公式/g, selectedText);
-            } else if (syntax.includes('公式')) {
-                insertText = syntax.replace(/公式/g, '');
-            }
-            // 处理其他格式的"text"占位符
-            else if (selectedText && syntax.includes('text')) {
-                insertText = syntax.replace(/text/g, selectedText);
+            if (syntax.includes('公式')) {
+                insertText = syntax.replace(/公式/g, selectedText || '');
             } else if (syntax.includes('text')) {
-                insertText = syntax.replace(/text/g, '');
+                insertText = syntax.replace(/text/g, selectedText || '');
             }
             
-            const newValue = editor.value.substring(0, start) + 
-                            insertText + 
-                            editor.value.substring(end);
+            editor.value = editor.value.substring(0, start) + insertText + editor.value.substring(end);
             
-            editor.value = newValue;
-            
-            let newCursorPos = start + insertText.length;
-            
-            // 设置光标位置
+            let newPos = start + insertText.length;
             if (syntax.includes('公式') && !selectedText) {
-                const placeholderStart = syntax.indexOf('公式');
-                newCursorPos = start + placeholderStart;
-                editor.setSelectionRange(newCursorPos, newCursorPos + 2);
+                newPos = start + syntax.indexOf('公式');
+                editor.setSelectionRange(newPos, newPos + 2);
             } else if (syntax.includes('text') && !selectedText) {
-                const placeholderStart = syntax.indexOf('text');
-                newCursorPos = start + placeholderStart;
-                editor.setSelectionRange(newCursorPos, newCursorPos + 4);
+                newPos = start + syntax.indexOf('text');
+                editor.setSelectionRange(newPos, newPos + 4);
             } else {
-                editor.setSelectionRange(newCursorPos, newCursorPos);
+                editor.setSelectionRange(newPos, newPos);
             }
             
             editor.focus();
             renderMarkdown();
             updateWordCount();
-            saveToLocalStorage();
             
-        } catch (error) {
-            console.error('插入文本错误:', error);
+            // 移动端输入后自动收起工具栏
+            if (window.innerWidth <= 768 && toolbar) {
+                toolbar.classList.remove('show');
+            }
+            
         } finally {
-            // 重置标志
-            setTimeout(() => {
-                window.insertTextExecuting = false;
-            }, 10);
+            setTimeout(() => window.insertTextExecuting = false, 10);
         }
     }
     
-    function copyMarkdown() {
-        navigator.clipboard.writeText(editor.value)
-            .then(() => {
-                showNotification('已复制到剪贴板', 'success');
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                }, 2000);
-            })
-            .catch(err => {
-                console.error('复制失败:', err);
-                showNotification('复制失败', 'danger');
-            });
-    }
-    
-    function saveToLocalStorage() {
-        localStorage.setItem('markdown-editor-content', editor.value);
-    }
-    
-    function clearEditor() {
-        if (editor.value && confirm('确定要清空所有内容吗？')) {
-            editor.value = '';
-            renderMarkdown();
-            updateWordCount();
-            localStorage.removeItem('markdown-editor-content');
-            showNotification('内容已清空', 'warning');
-        }
-    }
-    
-    function downloadMarkdown() {
-        const content = editor.value;
-        if (!content.trim()) {
-            showNotification('编辑器为空', 'warning');
-            return;
-        }
-        
-        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `markdown-${new Date().toISOString().slice(0, 10)}.md`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        showNotification('文件开始下载', 'success');
-    }
-    
+    // ========== 工具函数 ==========
     function showNotification(message, type = 'info') {
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
+        const old = document.querySelector('.notification');
+        if (old) old.remove();
         
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-        `;
+        const notif = document.createElement('div');
+        notif.className = `notification notification-${type}`;
+        notif.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'danger' ? 'exclamation' : 'info'}"></i><span>${message}</span>`;
         
-        document.body.appendChild(notification);
-        
+        document.body.appendChild(notif);
+        setTimeout(() => notif.classList.add('show'), 10);
         setTimeout(() => {
-            notification.classList.add('show');
-        }, 10);
-        
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        }, 3000);
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 300);
+        }, 2000);
     }
     
     function addCopyButtonsToCodeBlocks() {
-        const codeBlocks = preview.querySelectorAll('pre');
-        codeBlocks.forEach(block => {
+        preview.querySelectorAll('pre').forEach(block => {
             if (block.querySelector('.copy-code-btn')) return;
-            
-            const copyButton = document.createElement('button');
-            copyButton.className = 'copy-code-btn';
-            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-            
-            copyButton.addEventListener('click', function() {
-                const code = block.querySelector('code') ? 
-                    block.querySelector('code').textContent : 
-                    block.textContent;
-                
-                navigator.clipboard.writeText(code)
-                    .then(() => {
-                        copyButton.innerHTML = '<i class="fas fa-check"></i>';
-                        copyButton.style.color = 'var(--success-color)';
-                        setTimeout(() => {
-                            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-                            copyButton.style.color = '';
-                        }, 2000);
-                    })
-                    .catch(err => {
-                        console.error('复制失败:', err);
-                    });
-            });
-            
-            block.style.position = 'relative';
-            block.appendChild(copyButton);
+            const btn = document.createElement('button');
+            btn.className = 'copy-code-btn';
+            btn.innerHTML = '<i class="fas fa-copy"></i>';
+            btn.onclick = () => {
+                const code = block.querySelector('code') ? block.querySelector('code').textContent : block.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 2000);
+                });
+            };
+            block.appendChild(btn);
         });
+    }
+
+    // ========== 移动端交互 ==========
+    function toggleMobileView() {
+        isPreviewMode = !isPreviewMode;
+        
+        if (isPreviewMode) {
+            editorPane.classList.remove('active');
+            previewPane.classList.add('active');
+            viewToggle.innerHTML = '<i class="fas fa-pen"></i>';
+            if(toolbar) toolbar.classList.remove('show');
+        } else {
+            previewPane.classList.remove('active');
+            editorPane.classList.add('active');
+            viewToggle.innerHTML = '<i class="fas fa-eye"></i>';
+        }
     }
     
-    // ========== 修复事件绑定 ==========
-    function bindToolbarEvents() {
-        if (isInitialized) {
-            console.log('工具栏事件已经绑定，跳过');
-            return;
-        }
-        
-        console.log('绑定工具栏事件...');
-        
-        // 方式1：使用事件委托
-        const toolbar = document.querySelector('.toolbar');
-        if (toolbar) {
-            // 移除可能存在的旧监听器
-            toolbar.removeEventListener('click', handleToolbarClick);
-            // 添加新监听器
-            toolbar.addEventListener('click', handleToolbarClick);
-        }
-        
-        // 方式2：或者保持原有方式，但确保只绑定一次
-        // 移除旧的事件监听器
-        toolbarButtons.forEach(button => {
-            // 克隆元素并替换，以移除所有事件监听器
-            const newButton = button.cloneNode(true);
-            button.parentNode.replaceChild(newButton, button);
-        });
-        
-        // 重新获取按钮元素
-        const newToolbarButtons = document.querySelectorAll('.toolbar-btn[data-insert]');
-        
-        // 绑定新的事件监听器
-        newToolbarButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.stopPropagation(); // 阻止事件冒泡
-                e.stopImmediatePropagation(); // 阻止其他监听器
-                
-                if (window.buttonClicked) {
-                    return; // 防止重复点击
-                }
-                
-                window.buttonClicked = true;
-                setTimeout(() => {
-                    window.buttonClicked = false;
-                }, 100);
-                
-                console.log('点击按钮:', this.dataset.insert);
-                insertText(this.dataset.insert);
-            }, { once: false }); // 不要使用 once，否则只能点击一次
-        });
-        
-        isInitialized = true;
-    }
+    // ========== 事件绑定 ==========
+    if (viewToggle) viewToggle.addEventListener('click', toggleMobileView);
+    if (openToolbarBtn) openToolbarBtn.addEventListener('click', () => toolbar.classList.add('show'));
+    if (closeToolbarBtn) closeToolbarBtn.addEventListener('click', () => toolbar.classList.remove('show'));
     
-    // 事件委托处理函数
-    function handleToolbarClick(e) {
-        const button = e.target.closest('.toolbar-btn[data-insert]');
-        if (!button) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        console.log('事件委托：点击按钮:', button.dataset.insert);
-        insertText(button.dataset.insert);
-    }
+    toolbarButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            insertText(this.dataset.insert);
+        });
+    });
+    
+    editor.addEventListener('input', () => {
+        renderMarkdown();
+        updateWordCount();
+    });
+    
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(editor.value).then(() => {
+            copyBtn.textContent = 'Copied';
+            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+        });
+    });
+    
+    saveBtn.addEventListener('click', () => {
+        localStorage.setItem('md-content', editor.value);
+        showNotification('Saved locally', 'success');
+        if (window.innerWidth <= 768) toolbar.classList.remove('show');
+    });
+    
+    clearBtn.addEventListener('click', () => {
+        if (confirm('Clear all content?')) {
+            editor.value = '';
+            renderMarkdown();
+            updateWordCount();
+            localStorage.removeItem('md-content');
+            if (window.innerWidth <= 768) toolbar.classList.remove('show');
+        }
+    });
+    
+    downloadBtn.addEventListener('click', () => {
+        const blob = new Blob([editor.value], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `md-${Date.now()}.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
     
     // ========== 初始化 ==========
-    
     marked.setOptions({
         breaks: true,
         gfm: true,
         highlight: function(code, lang) {
             if (lang && hljs.getLanguage(lang)) {
-                try {
-                    return hljs.highlight(code, { language: lang }).value;
-                } catch (err) {}
+                return hljs.highlight(code, { language: lang }).value;
             }
             return hljs.highlightAuto(code).value;
         }
     });
     
-    const savedTheme = localStorage.getItem('markdown-editor-theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButton(savedTheme);
-    
-    const savedContent = localStorage.getItem('markdown-editor-content');
-    if (savedContent) {
-        editor.value = savedContent;
+    const savedTheme = localStorage.getItem('markdown-editor-theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.querySelector('i').className = 'fas fa-sun';
     }
     
-    // 初始渲染
+    const savedContent = localStorage.getItem('md-content');
+    if (savedContent) editor.value = savedContent;
+    
     renderMarkdown();
     updateWordCount();
-    
-    // 事件监听
-    editor.addEventListener('input', function() {
-        renderMarkdown();
-        updateWordCount();
-        saveToLocalStorage();
-    });
-    
-    themeToggle.addEventListener('click', toggleTheme);
-    copyBtn.addEventListener('click', copyMarkdown);
-    saveBtn.addEventListener('click', function() {
-        saveToLocalStorage();
-        showNotification('内容已保存到本地存储', 'success');
-    });
-    clearBtn.addEventListener('click', clearEditor);
-    downloadBtn.addEventListener('click', downloadMarkdown);
-    
-    // 修复工具栏按钮事件绑定
-    bindToolbarEvents();
-    
-    document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            saveToLocalStorage();
-            showNotification('内容已保存', 'success');
-        }
-        
-        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-            e.preventDefault();
-            downloadMarkdown();
-        }
-        
-        if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
-            e.preventDefault();
-            clearEditor();
-        }
-    });
-    
-    setInterval(() => {
-        const content = editor.value;
-        if (content && content !== localStorage.getItem('markdown-editor-content')) {
-            saveToLocalStorage();
-        }
-    }, 30000);
-    
-    // 初始化提示框
     initTooltips();
-    
-    showNotification('编辑器已加载，支持数学公式和提示框', 'info');
 });
