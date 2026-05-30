@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const openToolbarBtn = document.getElementById('openToolbarBtn');
     const closeToolbarBtn = document.getElementById('closeToolbarBtn');
     
-    let isInitialized = false;
     let isPreviewMode = false;
     
     // ========== 数学公式支持 ==========
@@ -42,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ========== 提示框功能 ==========
     function initTooltips() {
-        if (typeof tippy !== 'function' || window.innerWidth <= 768) return; // 移动端禁用提示
+        if (typeof tippy !== 'function' || window.innerWidth <= 768) return; 
         
         tippy('[data-tippy-content]', {
             theme: 'light-border',
@@ -91,15 +90,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const end = editor.selectionEnd;
             const selectedText = editor.value.substring(start, end);
             
-            let insertText = syntax;
-            if (syntax.includes('公式')) {
-                insertText = syntax.replace(/公式/g, selectedText || '');
-            } else if (syntax.includes('text')) {
-                insertText = syntax.replace(/text/g, selectedText || '');
+            // 修复：确保把字面量 "\n" 转换为真正的换行符
+            let insertText = syntax.replace(/\\n/g, '\n');
+            
+            if (insertText.includes('公式')) {
+                insertText = insertText.replace(/公式/g, selectedText || '');
+            } else if (insertText.includes('text')) {
+                insertText = insertText.replace(/text/g, selectedText || '');
+            } else if (insertText.includes('code') && !insertText.includes('`code`')) {
+                insertText = insertText.replace(/code/g, selectedText || '');
             }
             
             editor.value = editor.value.substring(0, start) + insertText + editor.value.substring(end);
             
+            // 光标定位逻辑
             let newPos = start + insertText.length;
             if (syntax.includes('公式') && !selectedText) {
                 newPos = start + syntax.indexOf('公式');
@@ -225,6 +229,15 @@ document.addEventListener('DOMContentLoaded', function() {
         a.download = `md-${Date.now()}.md`;
         a.click();
         URL.revokeObjectURL(url);
+    });
+    
+    // 快捷键支持
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            localStorage.setItem('md-content', editor.value);
+            showNotification('Saved locally', 'success');
+        }
     });
     
     // ========== 初始化 ==========
