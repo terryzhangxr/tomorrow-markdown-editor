@@ -2,10 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomorrow Markdown | Vercel Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tomorrow Markdown Editor</title>
     <meta name="description" content="实时 Markdown 编辑器，支持暗色模式、语法高亮、数学公式和本地保存">
-    <link rel="canonical" href="https://markdown.mrzxr.com/" >
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +15,6 @@
     <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     
     <script src="https://unpkg.com/@popperjs/core@2"></script>
@@ -24,69 +22,74 @@
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css">
     
     <link rel="stylesheet" href="style.css">
-    
-    <link rel="icon" href="https://ik.imagekit.io/terryzhang/IMG_7113.jpeg" type="image/x-icon">
 </head>
 <body>
     <div class="layout">
         <header class="navbar">
             <div class="logo">
-                <svg width="24" height="24" viewBox="0 0 76 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" fill="var(--fg-main)"/>
-                </svg>
-                <h1>Tomorrow Markdown</h1>
+                <i class="fa-brands fa-markdown logo-icon"></i>
+                <h1>Tomorrow</h1>
                 <span class="badge">v1.2</span>
             </div>
             <div class="nav-actions">
                 <div class="word-count">
                     <span id="wordCount">0</span> words
                 </div>
+                <button id="viewToggle" class="btn-ghost mobile-only" type="button">
+                    <i class="fas fa-eye"></i>
+                </button>
                 <button id="themeToggle" class="btn-ghost" type="button">
                     <i class="fas fa-moon"></i>
-                    <span>Theme</span>
                 </button>
             </div>
         </header>
 
-        <div class="toolbar">
-            <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="# " type="button" data-tippy-content="标题 (H1)"><i class="fas fa-heading"></i></button>
-                <button class="toolbar-btn" data-insert="## " type="button" data-tippy-content="二级标题 (H2)"><i class="fas fa-heading" style="font-size: 0.85em;"></i></button>
-                <button class="toolbar-btn" data-insert="**text**" type="button" data-tippy-content="粗体"><i class="fas fa-bold"></i></button>
-                <button class="toolbar-btn" data-insert="*text*" type="button" data-tippy-content="斜体"><i class="fas fa-italic"></i></button>
-                <button class="toolbar-btn" data-insert="~~text~~" type="button" data-tippy-content="删除线"><i class="fas fa-strikethrough"></i></button>
+        <div class="toolbar" id="toolbar">
+            <div class="toolbar-scroll">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-insert="# " type="button" data-tippy-content="标题 (H1)"><i class="fas fa-heading"></i></button>
+                    <button class="toolbar-btn" data-insert="## " type="button" data-tippy-content="二级标题 (H2)"><i class="fas fa-heading" style="font-size: 0.85em;"></i></button>
+                    <button class="toolbar-btn" data-insert="**text**" type="button" data-tippy-content="粗体"><i class="fas fa-bold"></i></button>
+                    <button class="toolbar-btn" data-insert="*text*" type="button" data-tippy-content="斜体"><i class="fas fa-italic"></i></button>
+                    <button class="toolbar-btn" data-insert="~~text~~" type="button" data-tippy-content="删除线"><i class="fas fa-strikethrough"></i></button>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-insert="`code`" type="button" data-tippy-content="行内代码"><i class="fas fa-code"></i></button>
+                    <button class="toolbar-btn" data-insert="```\ncode\n```" type="button" data-tippy-content="代码块"><i class="fas fa-terminal"></i></button>
+                    <button class="toolbar-btn" data-insert="$公式$" type="button" data-tippy-content="数学公式"><i class="fa-solid fa-square-root-variable"></i></button>
+                    <button class="toolbar-btn" data-insert="[链接文本](url)" type="button" data-tippy-content="链接"><i class="fas fa-link"></i></button>
+                    <button class="toolbar-btn" data-insert="![图片描述](url)" type="button" data-tippy-content="图片"><i class="fas fa-image"></i></button>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-insert="- [ ] " type="button" data-tippy-content="待办列表"><i class="fas fa-tasks"></i></button>
+                    <button class="toolbar-btn" data-insert="1. " type="button" data-tippy-content="有序列表"><i class="fas fa-list-ol"></i></button>
+                    <button class="toolbar-btn" data-insert="- " type="button" data-tippy-content="无序列表"><i class="fas fa-list-ul"></i></button>
+                    <button class="toolbar-btn" data-insert="> " type="button" data-tippy-content="引用"><i class="fas fa-quote-right"></i></button>
+                    <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" type="button" data-tippy-content="表格"><i class="fas fa-table"></i></button>
+                </div>
+
+                <div class="spacer desktop-only"></div>
+                <div class="divider mobile-only"></div>
+
+                <div class="toolbar-group action-group">
+                    <button id="saveBtn" class="toolbar-btn" type="button" data-tippy-content="保存"><i class="fas fa-save"></i></button>
+                    <button id="clearBtn" class="toolbar-btn text-error" type="button" data-tippy-content="清空"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
             
-            <div class="divider"></div>
-            
-            <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="`code`" type="button" data-tippy-content="行内代码"><i class="fas fa-code"></i></button>
-                <button class="toolbar-btn" data-insert="```\ncode\n```" type="button" data-tippy-content="代码块"><i class="fas fa-terminal"></i></button>
-                <button class="toolbar-btn" data-insert="$公式$" type="button" data-tippy-content="数学公式"><i class="fa-solid fa-square-root-variable"></i></button>
-                <button class="toolbar-btn" data-insert="[链接文本](url)" type="button" data-tippy-content="链接"><i class="fas fa-link"></i></button>
-                <button class="toolbar-btn" data-insert="![图片描述](url)" type="button" data-tippy-content="图片"><i class="fas fa-image"></i></button>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="toolbar-group">
-                <button class="toolbar-btn" data-insert="- [ ] " type="button" data-tippy-content="待办列表"><i class="fas fa-tasks"></i></button>
-                <button class="toolbar-btn" data-insert="1. " type="button" data-tippy-content="有序列表"><i class="fas fa-list-ol"></i></button>
-                <button class="toolbar-btn" data-insert="- " type="button" data-tippy-content="无序列表"><i class="fas fa-list-ul"></i></button>
-                <button class="toolbar-btn" data-insert="> " type="button" data-tippy-content="引用"><i class="fas fa-quote-right"></i></button>
-                <button class="toolbar-btn" data-insert="| 标题 | 标题 |\n| --- | --- |\n| 内容 | 内容 |" type="button" data-tippy-content="表格"><i class="fas fa-table"></i></button>
-            </div>
-
-            <div class="spacer"></div>
-
-            <div class="toolbar-group">
-                <button id="saveBtn" class="toolbar-btn" type="button" data-tippy-content="保存"><i class="fas fa-save"></i></button>
-                <button id="clearBtn" class="toolbar-btn text-error" type="button" data-tippy-content="清空"><i class="fas fa-trash"></i></button>
-            </div>
+            <button class="toolbar-close mobile-only" id="closeToolbarBtn">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
 
         <main class="workspace">
-            <section class="pane editor-pane">
+            <section class="pane editor-pane active" id="editorPane">
                 <div class="pane-header">
                     <span class="pane-title">Editor</span>
                     <button id="copyBtn" class="btn-sm" type="button">Copy</button>
@@ -96,14 +99,18 @@
 
 ## ✨ 新特性
 1. 支持 LaTeX 数学公式 $E=mc^2$
-2. Vercel 极简设计风格
+2. 极简设计，移动端优先
 3. 实时预览与本地存储
 
 **开始你的创作吧！**"></textarea>
                 </div>
+                
+                <button class="fab-tools mobile-only" id="openToolbarBtn">
+                    <i class="fas fa-tools"></i>
+                </button>
             </section>
             
-            <section class="pane preview-pane">
+            <section class="pane preview-pane" id="previewPane">
                 <div class="pane-header">
                     <span class="pane-title">Preview</span>
                     <button id="downloadBtn" class="btn-sm btn-primary" type="button">Download</button>
@@ -111,6 +118,28 @@
                 <div class="pane-content" id="preview"></div>
             </section>
         </main>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <span class="footer-tag"><i class="fas fa-calculator"></i> LaTeX</span>
+                    <span class="footer-tag"><i class="fas fa-code"></i> Code</span>
+                    <span class="footer-tag"><i class="fas fa-cloud"></i> Deploy</span>
+                    <span class="footer-tag"><i class="fas fa-sync-alt"></i> Auto-save</span>
+                </div>
+                <div class="footer-links">
+                    <a href="https://www.mrzxr.com/" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-compass-drafting"></i> by terryzhang
+                    </a>
+                    <a href="https://github.com/terryzhangxr/tomorrow-markdown-editor" target="_blank" rel="noopener noreferrer" class="desktop-link">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://katex.org/docs/supported.html" target="_blank" rel="noopener noreferrer" class="desktop-link">
+                        <i class="fas fa-infinity"></i> KaTeX Docs
+                    </a>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script src="https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js"></script>
